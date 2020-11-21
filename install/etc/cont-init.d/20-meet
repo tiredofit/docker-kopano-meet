@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bash
+
+source /assets/functions/00-container
+source /assets/defaults/10-nginx
+prepare_service
+
+PROCESS_NAME="kopano-meet"
+
+mkdir -p "${CONFIG_PATH}"
+configure_logging
+
+### Meet Config
+configure_meet
+
+liftoff

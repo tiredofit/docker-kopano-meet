@@ -1,0 +1,42 @@
+#!/usr/bin/with-contenv bash
+
+CONFIG_PATH=${CONFIG_PATH:-"/config/"}
+LOG_FILE=${LOG_FILE:-"meet.log"}
+LOG_LEVEL=${LOG_LEVEL:-"DEBUG"}
+LOG_PATH=${LOG_PATH:-"/logs/meet/"}
+LOG_TIMESTAMPS=${LOG_TIMESTAMPS:-"TRUE"}
+LOG_TYPE=${LOG_TYPE:-"FILE"}
+MEET_CONFIG_FILE=${MEET_CONFIG_FILE:-"meet.json"}
+MEET_DISABLE_FULL_GAB=${MEET_DISABLE_FULL_GAB:-"FALSE"}
+MEET_ENABLE_GUESTS=${MEET_ENABLE_GUESTS:-"TRUE"}
+MEET_EXTERNAL_APPS=${MEET_EXTERNAL_APPS:-"kopano-calendar,kopano-contacts,kopano-meet,kopano-mail,kopano-konnect,kopano-webapp"}
+MEET_GUESTS_DEFAULT_USER=${MEET_GUESTS_DEFAULT_USER:-null}
+MEET_KWMSERVER_URL=${MEET_KWMSERVER_URL:-""}
+MEET_OIDC_ISS=${MEET_OIDC_ISS:-""}
+MEET_WEBROOT=${MEET_WEBROOT:-"/usr/share/kopano-meet/meet-webapp"}
+SERVER_ENABLE_HTTP=${SERVER_ENABLE_HTTP:-"FALSE"}
+SERVER_ENABLE_HTTPS=${SERVER_ENABLE_HTTPS:-"FALSE"}
+SERVER_LISTEN_PORT=${SERVER_LISTEN_PORT_:-236}
+SERVER_LISTEN_PORT_SECURE=${SERVER_LISTEN_PORT_SECURE:-237}
+SETUP_TYPE=${SETUP_TYPE:-"AUTO"}
+
+truefalse_yesno ENABLE_COREDUMPS
+####
+
+###
+if var_true "${SERVER_ENABLE_HTTP}" || var_true "${SERVER_ENABLE_HTTPS}" ; then
+    if var_true "${SERVER_ENABLE_HTTPS}" ; then
+        SOCKET_SERVER=${SOCKET_SERVER:-"https://server:${SERVER_LISTEN_PORT_SECURE}"}
+    elif var_true "${SERVER_ENABLE_HTTP}" ; then
+        SOCKET_SERVER=${SOCKET_SERVER:-"http://server:${SERVER_LISTEN_PORT}"}
+    fi
+    if [[ "${SOCKET_SERVER}" == *"htt"*"://server:"* ]] ; then
+        if ! grep -q "127.0.0.1 server" /etc/hosts ; then
+            echo "127.0.0.1 server" >> /etc/hosts
+        fi
+    fi
+else
+    SOCKET_SERVER=${SOCKET_SERVER:-"file:///var/run/kopano/server.sock"}
+fi
+
+

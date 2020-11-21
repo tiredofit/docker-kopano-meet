@@ -1,0 +1,58 @@
+version: '2.4'
+services:
+
+  meet-app:
+    image: tiredofit/kopano-meet:latest
+    container_name: meet-app
+    labels: 
+      - traefik.enable=true
+      - traefik.http.routers.meet-app.rule=Host(`meet.example.com`)
+      - traefik.http.services.meet-app.loadbalancer.server.port=80    
+    volumes:
+      - /var/local/data/_shared-data/logs/meet:/logs
+      - /var/local/data/_shared-data/data:/data
+      - /var/local/data/_shared-data/config:/config
+      - /var/local/data/_shared-data/certs:/certs
+      - ./assets/custom:/assets/custom
+    environment:
+      - TIMEZONE=America/Vancouver
+      - CONTAINER_LOG_LEVEL=DEBUG
+      - DEBUG_MODE=FALSE
+      - LOG_LEVEL=DEBUG
+
+     ### Nginx & PHP
+      - NGINX_FASTCGI_BUFFERS=32 32k
+      - NGINX_FASTCGI_BUFFER_SIZE=64k
+
+     ### Meet
+      - MEET_KWM_URL=
+      - MEET_OIDC_CLIENT_ID=meet-example-com
+      - MEET_OIDC_ISS=https://auth.connect.example.com
+      
+      - MEET_HOSTNAME=meet.example.com
+      - MEET_EXTERNAL_CALENDAR_HOSTNAME=mail.example.com
+      - MEET_EXTERNAL_CONTACTS_HOSTNAME=mail.example.com
+      - MEET_EXTERNAL_KONNECT_HOSTNAME=meet.example.com
+      - MEET_EXTERNAL_MAIL_HOSTNAME=mail.example.com
+      - MEET_EXTERNAL_WEBAPP_HOSTNAME=mail.example.com
+
+      - KONNECT_HOST=auth-connect-app
+      - KONNECT_PORT=8777
+      - KAPI_HOST=kapi-meet-app
+      - KAPI_PORT=8039
+      - KWMSERVER_HOST=kwmserver-meet-app
+      - KWMSERVER_PORT=8778
+
+    ### These final lines are for Fail2ban. If you don't want, comment and also add ENABLE_FAIL2BAN=FALSE to your environment
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - proxy
+      - services
+    restart: always
+
+networks:
+  proxy:
+    external: true
+  services:
+    external: true
